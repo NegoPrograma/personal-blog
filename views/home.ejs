@@ -1,11 +1,18 @@
 <%- include("partials/header") %>
 
-<h1>Home</h1>
-<p> <%= homeLorem %> </p>
+<h1>Página inicial</h1>
 
-<% for(let i = 0; i < posts.length; i++){ %>
-        <h1> <%= posts[i].postTitle %> </h1>
-        <p> <%= posts[i].postText %> </p>
-    <% }%>
+<% posts.forEach( (post) => {  %>
+        <h1> <%= post.postTitle %> </h1>
+        <p> <%= post.postText.slice(0,100) %>...
+            <a href="/posts/<%= post.postTitle.toLowerCase().replace(/\s/g,'-')%>">Ler mais.</a>
+        </p>
+    <% });%>
 
 <%- include("partials/footer") %>
+
+
+
+
+
+
