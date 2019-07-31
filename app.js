@@ -1,72 +1,125 @@
-//jshint esversion:6
+
+// Setando os modules necessários pro projeto.
 
 const express = require("express");
-const bodyParser = require("body-parser");
-const ejs = require("ejs");
-const rf = require( __dirname + "/route_formatting.js");
-
-const homeStartingContent = "Lacus vel facilisis volutpat est velit egestas dui id ornare. Semper auctor neque vitae tempus quam. Sit amet cursus sit amet dictum sit amet justo. Viverra tellus in hac habitasse. Imperdiet proin fermentum leo vel orci porta. Donec ultrices tincidunt arcu non sodales neque sodales ut. Mattis molestie a iaculis at erat pellentesque adipiscing. Magnis dis parturient montes nascetur ridiculus mus mauris vitae ultricies. Adipiscing elit ut aliquam purus sit amet luctus venenatis lectus. Ultrices vitae auctor eu augue ut lectus arcu bibendum at. Odio euismod lacinia at quis risus sed vulputate odio ut. Cursus mattis molestie a iaculis at erat pellentesque adipiscing.";
-const aboutContent = "Hac habitasse platea dictumst vestibulum rhoncus est pellentesque. Dictumst vestibulum rhoncus est pellentesque elit ullamcorper. Non diam phasellus vestibulum lorem sed. Platea dictumst quisque sagittis purus sit. Egestas sed sed risus pretium quam vulputate dignissim suspendisse. Mauris in aliquam sem fringilla. Semper risus in hendrerit gravida rutrum quisque non tellus orci. Amet massa vitae tortor condimentum lacinia quis vel eros. Enim ut tellus elementum sagittis vitae. Mauris ultrices eros in cursus turpis massa tincidunt dui.";
-const contactContent = "Scelerisque eleifend donec pretium vulputate sapien. Rhoncus urna neque viverra justo nec ultrices. Arcu dui vivamus arcu felis bibendum. Consectetur adipiscing elit duis tristique. Risus viverra adipiscing at in tellus integer feugiat. Sapien nec sagittis aliquam malesuada bibendum arcu vitae. Consequat interdum varius sit amet mattis. Iaculis nunc sed augue lacus. Interdum posuere lorem ipsum dolor sit amet consectetur adipiscing elit. Pulvinar elementum integer enim neque. Ultrices gravida dictum fusce ut placerat orci nulla. Mauris in aliquam sem fringilla ut morbi tincidunt. Tortor posuere ac ut consequat semper viverra nam libero.";
-
 const app = express();
+const bodyParser = require("body-parser");
+const db = require("mongoose");
+
+// Configurando os módulos para funcionar do jeito desejado
 
 app.set('view engine', 'ejs');
-
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
-const posts = [];
+// Configurando o link do DB, utilizando o login e password de um user criado no MongoDB-Atlas
 
-app.get("/posts",(req,res)=>{
-  res.render("home",{homeLorem: homeStartingContent, posts: posts});
+db.connect("mongodb+srv://<login>:<password>@cluster0-vyins.mongodb.net/DBName",{useNewUrlParser: true});
+
+/*
+
+Setando o Schema e o Model.
+Pra facilitar o entendimento, pensa que o Schema é uma classe (ou uma table do SQL), e que o Model é a instanciação dessa classe, é pelo model que vc chama as funções do DB
+
+*/
+
+
+const postSchema = {
+  postTitle: {
+    type: String,
+    required: [true]
+  },
+  postText: {
+    type: String,
+    required: [true]
+  }
+};
+
+const postModel = db.model("Post",postSchema);
+
+// Configurando o comportamento dos caminhos
+
+app.get("/",(req,res)=>{
+  res.redirect("/home");
+});
+
+app.get("/home",(req,res)=>{
+  postModel.find({},(error,results)=>{
+  res.render("home",{posts: results});
+
+  });
+
 });
 
 app.get("/posts/:post",(req,res)=>{
-  let actual_post;
-  posts.forEach( (post) => {
-    if(rf.route_formatting(req.params.post) == rf.route_formatting(post.postTitle));
-          console.log("match found!");
-          actual_post = post;
+  postModel.findOne({_id: req.params.post},(err,result)=>{
+    res.render("unique_post",{ post: result});
   });
-  res.render("unique_post",{ post: actual_post});
 });
 
 
 app.get("/contact",(req,res)=>{
-  res.render("contact",{contactLorem: contactContent});
+  res.render("contact");
   
   
 });
 app.get("/about",(req,res)=>{
-  res.render("about",{aboutLorem: aboutContent});
+  res.render("about");
 });
 
 
+//criando posts
 
-app.get("/compose",(req,res)=>{
-  res.render("compose");
+app.get("/newpost",(req,res)=>{
+  res.render("newpost");
 
 });
 
-app.post("/compose",(req,res)=>{ 
-  let post = {
-            postTitle: req.body.postTitle,
-            postText: req.body.postText
-  };
-  posts.push(post);
-  res.redirect("/posts");
+
+app.post("/newpost",(req,res)=>{ 
+
+  const post = new postModel({
+            postTitle: req.body.Title,
+            postText: req.body.Text
+  });
+  post.save();
+  res.redirect("/home");
 });
   
+//atualizando posts
+
+app.get("/refresh/:postId",(req,res)=>{
+  postModel.findOne({_id: req.params.postId},(error,result)=>{
+    res.render("refresh",{post:result});
+  });
+});
+
+app.post("/refresh/:postId",(req,res)=>{
+
+  postModel.findOneAndUpdate({_id:req.params.postId},{postTitle:req.body.postTitle,postText:req.body.postText},(error)=>{
+    console.log(error);
+  });
+
+  res.redirect("/home");
+});
+
+//deletando posts
+
+app.get("/delete/:postId",(req,res)=>{
+
+  postModel.deleteOne({_id:req.params.postId},(error)=>{
+    console.log(error);
+    
+  });
+  res.redirect("/home");
+
+
+});
 
 
 
+// process.env.PORT é pra deixar o heroku escolher o caminho que quiser
 
-
-
-
-
-
-app.listen(3002, function() {
+app.listen( process.env.PORT || 3002, function() {
   console.log("Server started on port 3002");
 });

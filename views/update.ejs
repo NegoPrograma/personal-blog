@@ -1,0 +1,13 @@
+<%- include("partials/header") %>
+    <form action="/update/<%= post._id %>" method="POST">
+        <h2>Título:</h2>
+        <input type="text" value="<%= post.postTitle%>" name="postTitle">
+        <h2>Texto:</h2>
+        <input type="text" id="textinbox" name="postText" value="<%= post.postText %>" cols="30" rows="10">
+
+        </input>
+        <button type="submit"></button>
+    </form>
+
+
+<%- include("partials/footer") %>

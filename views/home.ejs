@@ -1,13 +1,13 @@
 <%- include("partials/header") %>
 
 <h1>Página inicial</h1>
-
-<% posts.forEach( (post) => {  %>
-        <h1> <%= post.postTitle %> </h1>
-        <p> <%= post.postText.slice(0,100) %>...
-            <a href="/posts/<%= post.postTitle.toLowerCase().replace(/\s/g,'-')%>">Ler mais.</a>
+<!-- Usando EJS pq...pq é conveniente né, o for aí desse jeito é pra mostrar os posts do mais recente ao mais antigo-->
+<% for(let i = posts.length-1; i >= 0 ; i--){  %>
+        <h1> <%= posts[i].postTitle %> </h1>
+        <p> <%= posts[i].postText.slice(0,100) %>...
+            <a href="/posts/<%= posts[i]._id %>">Ler mais.</a>
         </p>
-    <% });%>
+    <% };%>
 
 <%- include("partials/footer") %>
 

@@ -1,14 +1,14 @@
 <%- include("partials/header") %>
 <h1>New Text</h1>
-<form action="/compose" method="POST">
+<form action="/newpost" method="POST">
 
 <div class="text-area">
     <label for="title"><b>Title</b></label>
-    <input id="title" name="postTitle">
+    <input id="title" name="Title">
 </div>
 <div class="text-area">
     <label for="textinbox"><b>Text</b></label>
-    <input type="text" id="textinbox" name="postText">
+    <input type="text" id="textinbox" name="Text">
 </div>
 <button class="btn btn-primary" type="submit">Post</button>
 
